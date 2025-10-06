@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Gastos - Família Aguiar Bardela</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #764ba2;
+            margin-bottom: 30px;
+            font-size: 1.2em;
+        }
+
+        .mes-selector {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .mes-selector input {
+            padding: 10px 20px;
+            font-size: 1.1em;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .card h3 {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .card .valor {
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+        }
+
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        tr:hover {
+            background: #f5f5f5;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 1em;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .auto-50 {
+            background: #e8f5e9;
+            font-weight: bold;
+            color: #2e7d32;
+            text-align: center;
+        }
+
+        .total-row {
+            background: #667eea !important;
+            color: white;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .total-row td {
+            border: none;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 10px 5px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-container {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .adicionar-gasto {
+            background: #28a745;
+            margin-top: 15px;
+        }
+
+        .gastos-variaveis {
+            margin-top: 20px;
+        }
+
+        .gasto-item {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 80px;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .gasto-item input[type="text"],
+        .gasto-item input[type="date"] {
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 1em;
+        }
+
+        .btn-remover {
+            background: #dc3545;
+            padding: 8px;
+            font-size: 0.9em;
+        }
+
+        .resumo-final {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+
+        .resumo-final h2 {
+            color: white;
+            border-bottom-color: white;
+        }
+
+        .resumo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .resumo-item {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .resumo-item h4 {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .resumo-item .valor {
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+
+        .badge {
+            background: #ffc107;
+            color: #000;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .pago-check {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .pago-check:checked {
+            accent-color: #28a745;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💰 Controle de Gastos Familiar</h1>
+        <p class="subtitle">Família Aguiar Bardela - Adjalma & Eliete</p>
+        
+        <div class="mes-selector">
+            <label for="mes">Mês de Referência: </label>
+            <input type="month" id="mes">
+        </div>
+
+        <div class="dashboard">
+            <div class="card">
+                <h3>Total Adjalma (50%)</h3>
+                <div class="valor" id="totalAguiar">R$ 4.742,50</div>
+            </div>
+            <div class="card">
+                <h3>Total Eliete (50%)</h3>
+                <div class="valor" id="totalBardela">R$ 4.742,50</div>
+            </div>
+            <div class="card">
+                <h3>Total Família</h3>
+                <div class="valor" id="totalGeral">R$ 9.485,00</div>
+            </div>
+            <div class="card">
+                <h3>Diferença</h3>
+                <div class="valor" id="diferenca">R$ 0,00</div>
+            </div>
+        </div>
+
+        <!-- GASTOS FIXOS -->
+        <div class="section">
+            <h2>🏠 Gastos Fixos Mensais <span class="badge">DIVIDIDO 50/50</span></h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Categoria</th>
+                        <th>Valor Fixo (R$)</th>
+                        <th>Valor Real (R$)</th>
+                        <th>Adjalma 50% (R$)</th>
+                        <th>Eliete 50% (R$)</th>
+                        <th style="text-align: center;">✓ Pago</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Empregada</td>
+                        <td>R$ 1.700,00</td>
+                        <td><input type="number" step="0.01" value="1700" class="gasto-fixo" data-row="0" oninput="calcular()"></td>
+                        <td class="auto-50" id="fixo-aguiar-0">R$ 850,00</td>
+                        <td class="auto-50" id="fixo-bardela-0">R$ 850,00</td>
+                        <td style="text-align: center;"><input type="checkbox" class="pago-check"></td>
+                    </tr>
+                    <tr>
+                        <td>Carro</td>
+                        <td>R$ 1.030,00</td>
+                        <td><input type="number" step="0.01" value="1030" class="gasto-fixo" data-row="1" oninput="calcular()"></td>
+                        <td class="auto-50" id="fixo-aguiar-1">R$ 515,00</td>
+                        <td class="auto-50" id="fixo-bardela-1">R$ 515,00</td>
+                        <td style="text-align: center;"><input type="checkbox" class="pago-check"></td>
+                    </tr>
+                    <tr>
+                        <td>Combustível</td>
+                        <td>R$ 500,00</td>
+                        <td><input type="number" step="0.01" value="500" class="gasto-fixo" data-row="2" oninput="calcular()"></td>
+                        <td class="auto-50" id="fixo-aguiar-2">R$ 250,00</td>
+                        <td class="auto-50" id="fixo-bardela-2">R$ 250,00</td>
+                        <td style="text-align: center;"><input type="checkbox" class="pago-check"></td>
+                    </tr>
+                    <tr>
+                        <td>Alimentação Miguel</td>
+                        <td>R$ 150,00</td>
+                        <td><input type="number" step="0.01" value="150" class="gasto-fixo" data-row="3" oninput="calcular()"></td>
+                        <td class="auto-50" id="fixo-aguiar-3">R$ 75,00</td>
+                        <td class="auto-50" id="fixo-bardela-3">R$ 75,00</td>
+                        <td style="text-align: center;"><input type="checkbox" class="pago-check"></td>
+                    </tr>
+                    <tr>
+                        <td>Segurança</td>
+                        <td>R$ 165,00</td>
+                        <td><input type="number" step="0.01" value="165" class="gasto-fixo" data-row="4" oninput="calcular()"></td>
+                        <td class="auto-50" id="fixo-aguiar-4">R$ 82,50</td>
+                        <td class="auto-50" id="fixo-bardela-4">R$ 82,50</td>
+                        <td style="text-align: center;"><input type="checkbox" class="pago-check"></td>
+                    </tr>
+                    <tr>
+                        <td>Colégio</td>
+                        <td>R$ 1.800,00</td>
+                        <td><input type="number" step="0.01" value="1800" class="gasto-fixo" data-row="5" oninput="calcular()"></td>
+                        <td class="auto-50" id="fixo-aguiar-5">R$ 900,00</td>
+                        <td class="auto-50" id="fixo-bardela-5">R$ 900,00</td>
+                        <td style="text-align: center;"><input type="checkbox" class="pago-check"></td>
+                    </tr>
+                    <tr>
+                        <td>Psicóloga</td>
+                        <td>R$ 800,00</td>
+                        <td><input type="number" step="0.01" value="800" class="gasto-fixo" data-row="6" oninput="calcular()"></td>
+                        <td class="auto-50" id="fixo-aguiar-6">R$ 400,00</td>
+                        <td class="auto-50" id="fixo-bardela-6">R$ 400,00</td>
+                        <td style="text-align: center;"><input type="checkbox" class="pago-check"></td>
+                    </tr>
+                    <tr>
+                        <td>Psicóloga (adicional)</td>
+                        <td>R$ 230,00</td>
+                        <td><input type="number" step="0.01" value="230" class="gasto-fixo" data-row="7" oninput="calcular()"></td>
+                        <td class="auto-50" id="fixo-aguiar-7">R$ 115,00</td>
+                        <td class="auto-50" id="fixo-bardela-7">R$ 115,00</td>
+                        <td style="text-align: center;"><input type="checkbox" class="pago-check"></td>
+                    </tr>
+                    <tr>
+                        <td>Futebol</td>
+                        <td>R$ 230,00</td>
+                        <td><input type="number" step="0.01" value="230" class="gasto-fixo" data-row="8" oninput="calcular()"></td>
+                        <td class="auto-50" id="fixo-aguiar-8">R$ 115,00</td>
+                        <td class="auto-50" id="fixo-bardela-8">R$ 115,00</td>
+                        <td style="text-align: center;"><input type="checkbox" class="pago-check"></td>
+                    </tr>
+                    <tr>
+                        <td>Cinema</td>
+                        <td>R$ 200,00</td>
+                        <td><input type="number" step="0.01" value="200" class="gasto-fixo" data-row="9" oninput="calcular()"></td>
+                        <td class="auto-50" id="fixo-aguiar-9">R$ 100,00</td>
+                        <td class="auto-50" id="fixo-bardela-9">R$ 100,00</td>
+                        <td style="text-align: center;"><input type="checkbox" class="pago-check"></td>
+                    </tr>
+                    <tr>
+                        <td>Seguro</td>
+                        <td>R$ 700,00</td>
+                        <td><input type="number" step="0.01" value="700" class="gasto-fixo" data-row="10" oninput="calcular()"></td>
+                        <td class="auto-50" id="fixo-aguiar-10">R$ 350,00</td>
+                        <td class="auto-50" id="fixo-bardela-10">R$ 350,00</td>
+                        <td style="text-align: center;"><input type="checkbox" class="pago-check"></td>
+                    </tr>
+                    <tr>
+                        <td>Água</td>
+                        <td>R$ 360,00</td>
+                        <td><input type="number" step="0.01" value="360" class="gasto-fixo" data-row="11" oninput="calcular()"></td>
+                        <td class="auto-50" id="fixo-aguiar-11">R$ 180,00</td>
+                        <td class="auto-50" id="fixo-bardela-11">R$ 180,00</td>
+                        <td style="text-align: center;"><input type="checkbox" class="pago-check"></td>
+                    </tr>
+                    <tr>
+                        <td>Luz</td>
+                        <td>R$ 300,00</td>
+                        <td><input type="number" step="0.01" value="300" class="gasto-fixo" data-row="12" oninput="calcular()"></td>
+                        <td class="auto-50" id="fixo-aguiar-12">R$ 150,00</td>
+                        <td class="auto-50" id="fixo-bardela-12">R$ 150,00</td>
+                        <td style="text-align: center;"><input type="checkbox" class="pago-check"></td>
+                    </tr>
+                    <tr>
+                        <td>Revisão do Carro</td>
+                        <td>R$ 470,00</td>
+                        <td><input type="number" step="0.01" value="470" class="gasto-fixo" data-row="13" oninput="calcular()"></td>
+                        <td class="auto-50" id="fixo-aguiar-13">R$ 235,00</td>
+                        <td class="auto-50" id="fixo-bardela-13">R$ 235,00</td>
+                        <td style="text-align: center;"><input type="checkbox" class="pago-check"></td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr class="total-row">
+                        <td colspan="2">TOTAL GASTOS FIXOS</td>
+                        <td id="totalFixosValor">R$ 9.485,00</td>
+                        <td id="totalFixosAguiar">R$ 4.742,50</td>
+                        <td id="totalFixosBardela">R$ 4.742,50</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- GASTO FIXO CARTÃO DE CRÉDITO -->
+        <div class="section">
+            <h2>💳 Gasto Fixo Cartão de Crédito</h2>
+            <p style="margin-bottom: 15px; color: #666;">Somatória de: Combustível + Psicóloga + Futebol + Cinema + Revisão do Carro</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Descrição</th>
+                        <th>Total (R$)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Total Gasto Fixo no Cartão</td>
+                        <td id="totalGastoFixoCartao" style="font-weight: bold; font-size: 1.2em; color: #667eea;">R$ 0,00</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- GASTO FIXO CONTA BARDELA -->
+        <div class="section">
+            <h2>🏦 Gasto Fixo Conta Bardela (Eliete)</h2>
+            <p style="margin-bottom: 15px; color: #666;">Gastos debitados da conta de Eliete</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Descrição</th>
+                        <th>Valor (R$)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Seguro</td>
+                        <td id="valorSeguro" style="font-weight: bold; color: #667eea;">R$ 0,00</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr class="total-row">
+                        <td>RETORNO ELIETE</td>
+                        <td id="retornoEliete">R$ 0,00</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- SOMATÓRIA TOTAL DOS 3 CAMPOS -->
+        <div class="section" style="background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%); color: white; border: 5px solid #ff6b35;">
+            <h2 style="color: white; border-bottom-color: white; font-size: 1.8em;">💰 SOMATÓRIA TOTAL (RETORNO)</h2>
+            <p style="margin-bottom: 15px; opacity: 0.9; font-size: 1.1em;">Gasto Fixo Cartão + Gasto Fixo Conta Eliete + Gastos Variáveis</p>
+            <button onclick="calcular()" style="margin-bottom: 15px; background: white; color: #ff6b35;">🔄 Atualizar Cálculo</button>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="background: rgba(255,255,255,0.2);">Descrição</th>
+                        <th style="background: rgba(255,255,255,0.2);">Valor (R$)</th>
+                    </tr>
+                </thead>
+                <tbody style="background: white; color: #333;">
+                    <tr>
+                        <td style="font-size: 1.1em;">Gasto Fixo Cartão de Crédito</td>
+                        <td id="soma-cartao" style="font-weight: bold; color: #ff6b35; font-size: 1.2em;">R$ 0,00</td>
+                    </tr>
+                    <tr>
+                        <td style="font-size: 1.1em;">Gasto Fixo Conta Bardela (Eliete)</td>
+                        <td id="soma-conta-eliete" style="font-weight: bold; color: #ff6b35; font-size: 1.2em;">R$ 0,00</td>
+                    </tr>
+                    <tr>
+                        <td style="font-size: 1.1em;">Gastos Variáveis</td>
+                        <td id="soma-variaveis" style="font-weight: bold; color: #ff6b35; font-size: 1.2em;">R$ 0,00</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr style="background: #ff6b35; color: white; font-weight: bold; font-size: 1.8em;">
+                        <td style="padding: 25px; text-align: center;">TOTAL GERAL SOMADO</td>
+                        <td style="padding: 25px; text-align: center; font-size: 2em;" id="somatoriaTotal">R$ 0,00</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- CARTÃO DE CRÉDITO -->
+        <div class="section">
+            <h2>💳 Cartão de Crédito</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Titular</th>
+                        <th>Valor (R$)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Cartão Adjalma</td>
+                        <td><input type="number" step="0.01" value="0" id="cartaoAguiar" oninput="calcular()"></td>
+                    </tr>
+                    <tr>
+                        <td>Cartão Eliete</td>
+                        <td><input type="number" step="0.01" value="0" id="cartaoBardela" oninput="calcular()"></td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr class="total-row">
+                        <td>TOTAL CARTÕES</td>
+                        <td id="totalCartao">R$ 0,00</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- GASTOS EXTRAS -->
+        <div class="section">
+            <h2>📝 Gastos Variáveis / Extras</h2>
+            <div class="gastos-variaveis" id="gastosVariaveis">
+                <div class="gasto-item">
+                    <input type="text" placeholder="Descrição" class="desc-gasto">
+                    <input type="date" class="data-gasto">
+                    <input type="number" step="0.01" placeholder="Adjalma (R$)" class="valor-aguiar" value="0" oninput="calcular()">
+                    <input type="number" step="0.01" placeholder="Eliete (R$)" class="valor-bardela" value="0" oninput="calcular()">
+                    <button class="btn-remover" onclick="removerGasto(this)">🗑️</button>
+                </div>
+            </div>
+            <button class="adicionar-gasto" onclick="adicionarGasto()">➕ Adicionar Gasto Extra</button>
+            
+            <table style="margin-top: 20px;">
+                <tfoot>
+                    <tr class="total-row">
+                        <td>TOTAL EXTRAS</td>
+                        <td id="totalExtrasAguiar">R$ 0,00</td>
+                        <td id="totalExtrasBardela">R$ 0,00</td>
+                        <td id="totalExtrasGeral">R$ 0,00</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- RESUMO FINAL -->
+        <div class="resumo-final">
+            <h2>📊 Resumo Financeiro do Mês</h2>
+            <div class="resumo-grid">
+                <div class="resumo-item">
+                    <h4>Total Adjalma</h4>
+                    <div class="valor" id="resumoAguiar">R$ 4.742,50</div>
+                </div>
+                <div class="resumo-item">
+                    <h4>Total Eliete</h4>
+                    <div class="valor" id="resumoBardela">R$ 4.742,50</div>
+                </div>
+                <div class="resumo-item">
+                    <h4>Diferença</h4>
+                    <div class="valor" id="resumoDiferenca">R$ 0,00</div>
+                </div>
+                <div class="resumo-item">
+                    <h4>Total Família</h4>
+                    <div class="valor" id="resumoTotal">R$ 9.485,00</div>
+                </div>
+                <div class="resumo-item">
+                    <h4>Média Diária</h4>
+                    <div class="valor" id="mediaDiaria">R$ 316,17</div>
+                </div>
+                <div class="resumo-item">
+                    <h4>Média Semanal</h4>
+                    <div class="valor" id="mediaSemanal">R$ 2.213,17</div>
+                </div>
+                <div class="resumo-item">
+                    <h4>% Adjalma</h4>
+                    <div class="valor" id="percAguiar">50,0%</div>
+                </div>
+                <div class="resumo-item">
+                    <h4>% Eliete</h4>
+                    <div class="valor" id="percBardela">50,0%</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="btn-container">
+            <button onclick="salvarDados()">💾 Salvar Dados (JSON)</button>
+            <button onclick="carregarDados()">📂 Carregar Dados (JSON)</button>
+            <button onclick="salvarAutomatico()">💿 Salvar no Navegador</button>
+            <button onclick="exportarPDF()">📄 Exportar PDF</button>
+            <button onclick="limparVariaveis()">🗑️ Limpar Variáveis</button>
+            <button onclick="window.print()">🖨️ Imprimir</button>
+        </div>
+        
+        <input type="file" id="fileInput" accept=".json" style="display: none;" onchange="importarJSON(event)">
+    </div>
+
+    <script>
+        // Define mês atual
+        document.getElementById('mes').value = new Date().toISOString().slice(0, 7);
+
+        // CARREGA DADOS SALVOS AUTOMATICAMENTE AO ABRIR
+        window.addEventListener('load', function() {
+            carregarAutomatico();
+        });
+
+        function calcular() {
+            let totalFixosAguiar = 0;
+            let totalFixosBardela = 0;
+            let totalFixosValor = 0;
+            
+            // Valores específicos para cálculos especiais
+            let combustivel = 0;
+            let psicologa = 0;
+            let futebol = 0;
+            let cinema = 0;
+            let revisaoCarro = 0;
+            let seguro = 0;
+            
+            // Calcula gastos fixos (50/50)
+            const gastosFixos = document.querySelectorAll('.gasto-fixo');
+            gastosFixos.forEach((input, index) => {
+                const valor = parseFloat(input.value) || 0;
+                const metade = valor / 2;
+                totalFixosValor += valor;
+                totalFixosAguiar += metade;
+                totalFixosBardela += metade;
+                
+                // Captura valores específicos baseado no data-row
+                const row = input.closest('tr');
+                const categoria = row.querySelector('td').textContent.trim();
+                
+                if (categoria === 'Combustível') combustivel = valor;
+                if (categoria === 'Psicóloga') psicologa = valor;
+                if (categoria === 'Futebol') futebol = valor;
+                if (categoria === 'Cinema') cinema = valor;
+                if (categoria === 'Revisão do Carro') revisaoCarro = valor;
+                if (categoria === 'Seguro') seguro = valor;
+                
+                // Atualiza as células 50/50
+                document.getElementById(`fixo-aguiar-${index}`).textContent = formatarMoeda(metade);
+                document.getElementById(`fixo-bardela-${index}`).textContent = formatarMoeda(metade);
+            });
+
+            // Calcula Gasto Fixo Cartão de Crédito
+            const totalGastoFixoCartao = combustivel + psicologa + futebol + cinema + revisaoCarro;
+            document.getElementById('totalGastoFixoCartao').textContent = formatarMoeda(totalGastoFixoCartao);
+
+            // Calcula Gasto Fixo Conta Bardela (apenas Seguro)
+            document.getElementById('valorSeguro').textContent = formatarMoeda(seguro);
+            document.getElementById('retornoEliete').textContent = formatarMoeda(seguro);
+
+            // Cartão
+            const cartaoAguiar = parseFloat(document.getElementById('cartaoAguiar').value) || 0;
+            const cartaoBardela = parseFloat(document.getElementById('cartaoBardela').value) || 0;
+            const totalCartao = cartaoAguiar + cartaoBardela;
+
+            // Extras (Gastos Variáveis)
+            let extrasAguiar = 0;
+            let extrasBardela = 0;
+            
+            document.querySelectorAll('.gasto-item').forEach(item => {
+                const valorA = parseFloat(item.querySelector('.valor-aguiar').value) || 0;
+                const valorB = parseFloat(item.querySelector('.valor-bardela').value) || 0;
+                extrasAguiar += valorA;
+                extrasBardela += valorB;
+            });
+
+            const totalVariaveis = extrasAguiar + extrasBardela;
+
+            // SOMATÓRIA TOTAL DOS 3 CAMPOS - CORRIGIDO
+            const somatoriaTotal = totalGastoFixoCartao + seguro + totalVariaveis;
+            
+            // Atualiza os 3 campos individuais
+            document.getElementById('soma-cartao').textContent = formatarMoeda(totalGastoFixoCartao);
+            document.getElementById('soma-conta-eliete').textContent = formatarMoeda(seguro);
+            document.getElementById('soma-variaveis').textContent = formatarMoeda(totalVariaveis);
+            
+            // Atualiza o TOTAL GERAL SOMADO
+            document.getElementById('somatoriaTotal').textContent = formatarMoeda(somatoriaTotal);
+
+            console.log('DEBUG - Gasto Fixo Cartão:', totalGastoFixoCartao);
+            console.log('DEBUG - Seguro:', seguro);
+            console.log('DEBUG - Variáveis:', totalVariaveis);
+            console.log('DEBUG - SOMA TOTAL:', somatoriaTotal);
+
+            // Totais
+            const totalAguiar = totalFixosAguiar + cartaoAguiar + extrasAguiar;
+            const totalBardela = totalFixosBardela + cartaoBardela + extrasBardela;
+            const totalGeral = totalAguiar + totalBardela;
+            const diferenca = Math.abs(totalAguiar - totalBardela);
+
+            // Atualiza interface
+            document.getElementById('totalFixosValor').textContent = formatarMoeda(totalFixosValor);
+            document.getElementById('totalFixosAguiar').textContent = formatarMoeda(totalFixosAguiar);
+            document.getElementById('totalFixosBardela').textContent = formatarMoeda(totalFixosBardela);
+            
+            document.getElementById('totalCartao').textContent = formatarMoeda(totalCartao);
+            
+            document.getElementById('totalExtrasAguiar').textContent = formatarMoeda(extrasAguiar);
+            document.getElementById('totalExtrasBardela').textContent = formatarMoeda(extrasBardela);
+            document.getElementById('totalExtrasGeral').textContent = formatarMoeda(extrasAguiar + extrasBardela);
+            
+            document.getElementById('totalAguiar').textContent = formatarMoeda(totalAguiar);
+            document.getElementById('totalBardela').textContent = formatarMoeda(totalBardela);
+            document.getElementById('totalGeral').textContent = formatarMoeda(totalGeral);
+            document.getElementById('diferenca').textContent = formatarMoeda(diferenca);
+            
+            document.getElementById('resumoAguiar').textContent = formatarMoeda(totalAguiar);
+            document.getElementById('resumoBardela').textContent = formatarMoeda(totalBardela);
+            document.getElementById('resumoDiferenca').textContent = formatarMoeda(diferenca);
+            document.getElementById('resumoTotal').textContent = formatarMoeda(totalGeral);
+            document.getElementById('mediaDiaria').textContent = formatarMoeda(totalGeral / 30);
+            document.getElementById('mediaSemanal').textContent = formatarMoeda(totalGeral * 7 / 30);
+            
+            const percAguiar = totalGeral > 0 ? (totalAguiar / totalGeral * 100).toFixed(1) : 50.0;
+            const percBardela = totalGeral > 0 ? (totalBardela / totalGeral * 100).toFixed(1) : 50.0;
+            document.getElementById('percAguiar').textContent = percAguiar + '%';
+            document.getElementById('percBardela').textContent = percBardela + '%';
+        }
+
+        function formatarMoeda(valor) {
+            return 'R$ ' + valor.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
+
+        function adicionarGasto() {
+            const container = document.getElementById('gastosVariaveis');
+            const novoGasto = document.createElement('div');
+            novoGasto.className = 'gasto-item';
+            novoGasto.innerHTML = `
+                <input type="text" placeholder="Descrição" class="desc-gasto">
+                <input type="date" class="data-gasto">
+                <input type="number" step="0.01" placeholder="Adjalma (R$)" class="valor-aguiar" value="0" oninput="calcular()">
+                <input type="number" step="0.01" placeholder="Eliete (R$)" class="valor-bardela" value="0" oninput="calcular()">
+                <button class="btn-remover" onclick="removerGasto(this)">🗑️</button>
+            `;
+            container.appendChild(novoGasto);
+        }
+
+        function removerGasto(btn) {
+            btn.parentElement.remove();
+            calcular();
+        }
+
+        function salvarDados() {
+            const dados = {
+                mes: document.getElementById('mes').value,
+                gastosFixos: [],
+                cartoes: {
+                    aguiar: document.getElementById('cartaoAguiar').value,
+                    bardela: document.getElementById('cartaoBardela').value
+                },
+                gastosExtras: []
+            };
+
+            // Salva gastos fixos
+            document.querySelectorAll('.gasto-fixo').forEach((input, index) => {
+                const row = input.closest('tr');
+                const categoria = row.querySelector('td').textContent;
+                const pago = row.querySelector('.pago-check').checked;
+                dados.gastosFixos.push({
+                    categoria: categoria,
+                    valor: input.value,
+                    pago: pago
+                });
+            });
+
+            // Salva gastos extras
+            document.querySelectorAll('.gasto-item').forEach(item => {
+                const desc = item.querySelector('.desc-gasto').value;
+                const data = item.querySelector('.data-gasto').value;
+                const aguiar = item.querySelector('.valor-aguiar').value;
+                const bardela = item.querySelector('.valor-bardela').value;
+                
+                if (desc || data || aguiar || bardela) {
+                    dados.gastosExtras.push({
+                        descricao: desc,
+                        data: data,
+                        aguiar: aguiar,
+                        bardela: bardela
+                    });
+                }
+            });
+
+            const dadosJSON = JSON.stringify(dados, null, 2);
+            const blob = new Blob([dadosJSON], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `gastos_familia_${dados.mes}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            alert('✅ Dados salvos com sucesso em JSON!');
+        }
+
+        function carregarDados() {
+            document.getElementById('fileInput').click();
+        }
+
+        function importarJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const dados = JSON.parse(e.target.result);
+                    
+                    // Carrega mês
+                    document.getElementById('mes').value = dados.mes || '';
+                    
+                    // Carrega gastos fixos
+                    if (dados.gastosFixos) {
+                        dados.gastosFixos.forEach((item, index) => {
+                            const inputs = document.querySelectorAll('.gasto-fixo');
+                            if (inputs[index]) {
+                                inputs[index].value = item.valor;
+                                const checkbox = inputs[index].closest('tr').querySelector('.pago-check');
+                                if (checkbox) checkbox.checked = item.pago;
+                            }
+                        });
+                    }
+                    
+                    // Carrega cartões
+                    if (dados.cartoes) {
+                        document.getElementById('cartaoAguiar').value = dados.cartoes.aguiar || 0;
+                        document.getElementById('cartaoBardela').value = dados.cartoes.bardela || 0;
+                    }
+                    
+                    // Carrega gastos extras
+                    const container = document.getElementById('gastosVariaveis');
+                    container.innerHTML = '';
+                    
+                    if (dados.gastosExtras && dados.gastosExtras.length > 0) {
+                        dados.gastosExtras.forEach(item => {
+                            const novoGasto = document.createElement('div');
+                            novoGasto.className = 'gasto-item';
+                            novoGasto.innerHTML = `
+                                <input type="text" placeholder="Descrição" class="desc-gasto" value="${item.descricao || ''}">
+                                <input type="date" class="data-gasto" value="${item.data || ''}">
+                                <input type="number" step="0.01" placeholder="Adjalma (R$)" class="valor-aguiar" value="${item.aguiar || 0}" oninput="calcular()">
+                                <input type="number" step="0.01" placeholder="Eliete (R$)" class="valor-bardela" value="${item.bardela || 0}" oninput="calcular()">
+                                <button class="btn-remover" onclick="removerGasto(this)">🗑️</button>
+                            `;
+                            container.appendChild(novoGasto);
+                        });
+                    } else {
+                        adicionarGasto();
+                    }
+                    
+                    calcular();
+                    alert('✅ Dados carregados com sucesso!');
+                } catch (error) {
+                    alert('❌ Erro ao carregar arquivo: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function salvarAutomatico() {
+            salvarAutomaticoSilencioso();
+            alert('✅ Dados salvos no navegador! Ao voltar, os dados estarão aqui.');
+        }
+
+        function salvarAutomaticoSilencioso() {
+            const mes = document.getElementById('mes').value;
+            if (!mes) {
+                console.log('❌ Selecione um mês primeiro!');
+                return;
+            }
+
+            const dados = {
+                mes: mes,
+                gastosFixos: [],
+                cartoes: {
+                    aguiar: document.getElementById('cartaoAguiar').value,
+                    bardela: document.getElementById('cartaoBardela').value
+                },
+                gastosExtras: []
+            };
+
+            document.querySelectorAll('.gasto-fixo').forEach((input) => {
+                const row = input.closest('tr');
+                const categoria = row.querySelector('td').textContent;
+                const pago = row.querySelector('.pago-check') ? row.querySelector('.pago-check').checked : false;
+                dados.gastosFixos.push({
+                    categoria: categoria,
+                    valor: input.value,
+                    pago: pago
+                });
+            });
+
+            document.querySelectorAll('.gasto-item').forEach(item => {
+                const desc = item.querySelector('.desc-gasto').value;
+                const data = item.querySelector('.data-gasto').value;
+                const aguiar = item.querySelector('.valor-aguiar').value;
+                const bardela = item.querySelector('.valor-bardela').value;
+                
+                dados.gastosExtras.push({
+                    descricao: desc,
+                    data: data,
+                    aguiar: aguiar,
+                    bardela: bardela
+                });
+            });
+
+            try {
+                // SALVA COM UMA CHAVE ÚNICA POR MÊS
+                const chave = `gastosFamilia_${mes}`;
+                localStorage.setItem(chave, JSON.stringify(dados));
+                console.log(`💾 Dados do mês ${mes} salvos automaticamente`);
+            } catch (e) {
+                console.log('❌ Erro ao salvar: ', e.message);
+            }
+        }
+
+        function carregarAutomatico() {
+            const mes = document.getElementById('mes').value;
+            if (!mes) {
+                console.log('Nenhum mês selecionado ainda.');
+                return;
+            }
+
+            try {
+                // CARREGA COM A CHAVE ÚNICA DO MÊS
+                const chave = `gastosFamilia_${mes}`;
+                const dadosSalvos = localStorage.getItem(chave);
+                
+                if (!dadosSalvos) {
+                    console.log(`Nenhum dado encontrado para ${mes}`);
+                    return;
+                }
+
+                const dados = JSON.parse(dadosSalvos);
+                
+                if (dados.gastosFixos) {
+                    dados.gastosFixos.forEach((item, index) => {
+                        const inputs = document.querySelectorAll('.gasto-fixo');
+                        if (inputs[index]) {
+                            inputs[index].value = item.valor;
+                            const checkbox = inputs[index].closest('tr').querySelector('.pago-check');
+                            if (checkbox) checkbox.checked = item.pago;
+                        }
+                    });
+                }
+                
+                if (dados.cartoes) {
+                    document.getElementById('cartaoAguiar').value = dados.cartoes.aguiar || 0;
+                    document.getElementById('cartaoBardela').value = dados.cartoes.bardela || 0;
+                }
+                
+                const container = document.getElementById('gastosVariaveis');
+                container.innerHTML = '';
+                
+                if (dados.gastosExtras && dados.gastosExtras.length > 0) {
+                    dados.gastosExtras.forEach(item => {
+                        const novoGasto = document.createElement('div');
+                        novoGasto.className = 'gasto-item';
+                        novoGasto.innerHTML = `
+                            <input type="text" placeholder="Descrição" class="desc-gasto" value="${item.descricao || ''}">
+                            <input type="date" class="data-gasto" value="${item.data || ''}">
+                            <input type="number" step="0.01" placeholder="Adjalma (R$)" class="valor-aguiar" value="${item.aguiar || 0}" oninput="calcular()">
+                            <input type="number" step="0.01" placeholder="Eliete (R$)" class="valor-bardela" value="${item.bardela || 0}" oninput="calcular()">
+                            <button class="btn-remover" onclick="removerGasto(this)">🗑️</button>
+                        `;
+                        container.appendChild(novoGasto);
+                    });
+                } else {
+                    // Adiciona um campo vazio se não houver gastos extras
+                    adicionarGasto();
+                }
+                
+                calcular();
+                console.log(`✅ Dados do mês ${mes} carregados!`);
+            } catch (e) {
+                console.log('Erro ao carregar:', e.message);
+            }
+        }
+
+        // CARREGA DADOS QUANDO MUDAR O MÊS
+        document.getElementById('mes').addEventListener('change', function() {
+            carregarAutomatico();
+        });
+
+        function exportarPDF() {
+            alert('📄 Use a função "Imprimir" e selecione "Salvar como PDF" no seu navegador!');
+            window.print();
+        }
+
+        function limparVariaveis() {
+            if (confirm('⚠️ Limpar gastos variáveis e cartões?\n\nOs gastos fixos serão mantidos.')) {
+                document.getElementById('cartaoAguiar').value = '0';
+                document.getElementById('cartaoBardela').value = '0';
+                
+                const gastosExtras = document.querySelectorAll('.gasto-item');
+                for (let i = 1; i < gastosExtras.length; i++) {
+                    gastosExtras[i].remove();
+                }
+                
+                document.querySelectorAll('.desc-gasto').forEach(input => input.value = '');
+                document.querySelectorAll('.data-gasto').forEach(input => input.value = '');
+                document.querySelectorAll('.valor-aguiar').forEach(input => input.value = '0');
+                document.querySelectorAll('.valor-bardela').forEach(input => input.value = '0');
+                
+                calcular();
+                alert('🗑️ Gastos variáveis limpos!');
+            }
+        }
+
+        // Calcula ao carregar
+        calcular();
+        
+        // Força recalcular após 500ms para garantir
+        setTimeout(function() {
+            calcular();
+            console.log('Cálculo forçado executado!');
+        }, 500);
+    </script>
+</body>
+</html>

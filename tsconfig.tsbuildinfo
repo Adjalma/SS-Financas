@@ -1,0 +1,1 @@
+{"root":["./src/main.tsx","./src/vite-env.d.ts","./src/hooks/useshareddata.ts","./src/lib/supabase.ts","./src/ui/app.tsx","./src/ui/views/empresa.tsx","./src/ui/views/gastospessoais.tsx","./src/ui/views/holerite.tsx","./src/ui/widgets/calculatorinline.tsx"],"version":"5.9.3"}

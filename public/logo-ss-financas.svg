@@ -1,0 +1,14 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="128" y2="128" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2563eb"/>
+      <stop offset="1" stop-color="#22c55e"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="112" height="112" rx="24" fill="url(#g)"/>
+  <g fill="#ffffff" font-family="Segoe UI, Tahoma, Geneva, Verdana, sans-serif" font-weight="800">
+    <text x="27" y="68" font-size="40">SS</text>
+  </g>
+  <circle cx="100" cy="100" r="6" fill="#ffffff" opacity="0.85"/>
+</svg>
+
