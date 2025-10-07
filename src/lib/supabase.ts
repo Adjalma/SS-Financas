@@ -27,20 +27,39 @@ export async function saveMonthData(payload: MonthPayload): Promise<void> {
   const { data: monthRow } = await sb.from('months').select('*').eq('year_month', payload.mes).single();
   const monthId = monthRow.id;
 
-      await sb.from('fixed_costs').delete().eq('month_id', monthId).throwOnError();
-      await sb.from('variable_expenses').delete().eq('month_id', monthId).throwOnError();
-      await sb.from('cards').delete().eq('month_id', monthId).throwOnError();
+      // FIXOS: atualiza por (month_id, category)
+      if (payload.gastosFixos.length) {
+        await sb
+          .from('fixed_costs')
+          .upsert(
+            payload.gastosFixos.map(g => ({ month_id: monthId, category: g.categoria, amount: g.valor, paid: g.pago })),
+            { onConflict: 'month_id,category' }
+          )
+          .throwOnError();
+      }
 
-  if (payload.gastosFixos.length) {
-    await sb.from('fixed_costs').insert(payload.gastosFixos.map(g => ({ month_id: monthId, category: g.categoria, amount: g.valor, paid: g.pago }))).throwOnError();
-  }
-  if (payload.gastosExtras.length) {
-    await sb.from('variable_expenses').insert(payload.gastosExtras.map(e => ({ month_id: monthId, description: e.descricao, date: e.data || null, aguiar_amount: e.aguiar, bardela_amount: e.bardela }))).throwOnError();
-  }
-  await sb.from('cards').insert([
-    { month_id: monthId, owner: 'Aguiar', amount: payload.cartoes.aguiar },
-    { month_id: monthId, owner: 'Bardela', amount: payload.cartoes.bardela },
-  ]).throwOnError();
+      // VARIÁVEIS: para evitar chave falsa, mantemos estratégia delete+insert (sem constraint)
+      await sb.from('variable_expenses').delete().eq('month_id', monthId).throwOnError();
+      if (payload.gastosExtras.length) {
+        await sb
+          .from('variable_expenses')
+          .insert(
+            payload.gastosExtras.map(e => ({ month_id: monthId, description: e.descricao, date: e.data || null, aguiar_amount: e.aguiar, bardela_amount: e.bardela }))
+          )
+          .throwOnError();
+      }
+
+      // CARTÕES: atualiza por (month_id, owner)
+      await sb
+        .from('cards')
+        .upsert(
+          [
+            { month_id: monthId, owner: 'Aguiar', amount: payload.cartoes.aguiar },
+            { month_id: monthId, owner: 'Bardela', amount: payload.cartoes.bardela },
+          ],
+          { onConflict: 'month_id,owner' }
+        )
+        .throwOnError();
 }
 
 export async function loadMonthData(mes: string): Promise<MonthPayload | null> {

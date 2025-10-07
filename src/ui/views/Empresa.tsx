@@ -251,12 +251,12 @@ export const Empresa: React.FC = () => {
           <table style={styles.table as any}>
             <thead>
               <tr>
-                <th>Data</th><th>Tipo</th><th>Categoria</th><th>Centro Custo</th><th>Descrição</th><th>Valor</th><th>Pago</th>
+                <th>Data</th><th>Tipo</th><th>Categoria</th><th>Centro Custo</th><th>Descrição</th><th>Valor</th><th>Pago</th><th></th>
               </tr>
             </thead>
             <tbody>
-              {entries.map((e) => (
-                <tr key={e.id || Math.random()}>
+              {entries.map((e, idx) => (
+                <tr key={(e.id ?? `${e.date}-${e.description}-${idx}`)}>
                   <td>{e.date}</td>
                   <td>{e.type === 'revenue' ? 'Receita' : 'Despesa'}</td>
                   <td>{e.category || '-'}</td>
@@ -264,6 +264,26 @@ export const Empresa: React.FC = () => {
                   <td>{e.description}</td>
                   <td style={{textAlign:'right'}}>{formatMoeda(e.amount)}</td>
                   <td style={{textAlign:'center'}}>{e.paid ? '✓' : '—'}</td>
+                  <td style={{textAlign:'right'}}>
+                    <button style={styles.danger} onClick={async () => {
+                      try {
+                        const sb = getSupabase();
+                        if (!sb) { setEntries(arr => arr.filter((_, i)=>i!==idx)); return; }
+                        const { data: monthRow } = await sb.from('months').select('*').eq('year_month', mes).single();
+                        const monthId = monthRow.id;
+                        if (e.id) {
+                          const { error } = await sb.from('company_entries').delete().eq('id', e.id);
+                          if (error) throw error;
+                        } else {
+                          // fallback: remove por match aproximado
+                          await sb.from('company_entries').delete().eq('month_id', monthId).eq('description', e.description).eq('date', e.date).eq('amount', e.amount);
+                        }
+                        setEntries(arr => arr.filter((_, i)=>i!==idx));
+                      } catch (err:any) {
+                        alert(`Falha ao remover: ${err?.message || 'Erro'}`);
+                      }
+                    }}>Remover</button>
+                  </td>
                 </tr>
               ))}
             </tbody>
