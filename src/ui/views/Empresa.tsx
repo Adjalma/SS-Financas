@@ -31,7 +31,7 @@ export const Empresa: React.FC = () => {
     (async () => {
       const sb = getSupabase();
       if (sb) {
-        await sb.from('months').upsert({ year_month: mes }).throwOnError();
+        await sb.from('months').upsert({ year_month: mes }, { onConflict: 'year_month' }).throwOnError();
         const { data: monthRow } = await sb.from('months').select('*').eq('year_month', mes).single();
         const monthId = monthRow.id;
         const { data } = await sb.from('company_entries').select(`id, type, description, date, amount, paid, payment_method, categories(name), cost_centers(name)`).eq('month_id', monthId).order('date', { ascending: true });

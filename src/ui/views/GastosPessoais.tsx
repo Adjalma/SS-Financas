@@ -22,11 +22,19 @@ export const GastosPessoais: React.FC = () => {
       if (dados) {
         // Evita sobrepor os valores padrão com lista vazia
         if (Array.isArray(dados.gastosFixos) && dados.gastosFixos.length > 0) {
-          setGastosFixos(dados.gastosFixos);
+          // Deduplica por categoria para evitar linhas duplicadas
+          const map = new Map<string, { categoria: string; valor: number; pago: boolean }>();
+          for (const g of dados.gastosFixos) {
+            const cur = map.get(g.categoria);
+            if (!cur) map.set(g.categoria, { ...g });
+            else map.set(g.categoria, { categoria: g.categoria, valor: cur.valor + (g.valor||0), pago: cur.pago || g.pago });
+          }
+          setGastosFixos(Array.from(map.values()));
         }
         setCartaoAguiar(Number(dados.cartoes.aguiar) || 0);
         setCartaoBardela(Number(dados.cartoes.bardela) || 0);
-        setExtras(dados.gastosExtras.length ? dados.gastosExtras : [{ descricao: '', data: '', aguiar: 0, bardela: 0 }]);
+        // Nunca duplica extras; se vier vazio mantém um item em branco para UX
+        setExtras((dados.gastosExtras || []).length ? dados.gastosExtras : [{ descricao: '', data: '', aguiar: 0, bardela: 0 }]);
       } else {
         // fallback localStorage já é tratado dentro de loadMonthData
       }
