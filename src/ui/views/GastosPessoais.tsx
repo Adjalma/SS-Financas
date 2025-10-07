@@ -20,7 +20,10 @@ export const GastosPessoais: React.FC = () => {
     (async () => {
       const dados = await loadMonthData(mes);
       if (dados) {
-        setGastosFixos(dados.gastosFixos);
+        // Evita sobrepor os valores padrão com lista vazia
+        if (Array.isArray(dados.gastosFixos) && dados.gastosFixos.length > 0) {
+          setGastosFixos(dados.gastosFixos);
+        }
         setCartaoAguiar(Number(dados.cartoes.aguiar) || 0);
         setCartaoBardela(Number(dados.cartoes.bardela) || 0);
         setExtras(dados.gastosExtras.length ? dados.gastosExtras : [{ descricao: '', data: '', aguiar: 0, bardela: 0 }]);
@@ -63,13 +66,19 @@ export const GastosPessoais: React.FC = () => {
   }, [gastosFixos, extras, cartaoAguiar, cartaoBardela]);
 
   const salvar = async () => {
-    await saveMonthData({
-      mes,
-      gastosFixos,
-      cartoes: { aguiar: cartaoAguiar, bardela: cartaoBardela },
-      gastosExtras: extras,
-    });
-    alert('Dados salvos!');
+    try {
+      await saveMonthData({
+        mes,
+        gastosFixos,
+        cartoes: { aguiar: cartaoAguiar, bardela: cartaoBardela },
+        gastosExtras: extras,
+      });
+      alert('Dados salvos!');
+    } catch (e: any) {
+      console.error(e);
+      const msg = e?.message || e?.error?.message || 'Falha ao salvar.';
+      alert(`Falha ao salvar: ${msg}`);
+    }
   };
 
   return (

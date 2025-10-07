@@ -42,22 +42,33 @@ export const Holerite: React.FC = () => {
         return;
       }
       await sb.from('months').upsert({ year_month: mes }).throwOnError();
-      const { data: monthRow } = await sb.from('months').select('*').eq('year_month', mes).single();
+      const { data: monthRow, error: monthErr } = await sb.from('months').select('*').eq('year_month', mes).single();
+      if (monthErr || !monthRow) throw monthErr || new Error('Mês não encontrado');
       const monthId = monthRow.id;
-      await sb.from('salaries').delete().eq('month_id', monthId);
-      await sb.from('company_receivables').delete().eq('month_id', monthId);
-      await sb.from('company_taxes').delete().eq('month_id', monthId).eq('tax_type', 'inss');
+      let resp;
+      resp = await sb.from('salaries').delete().eq('month_id', monthId);
+      if (resp.error) throw resp.error;
+      resp = await sb.from('company_receivables').delete().eq('month_id', monthId);
+      if (resp.error) throw resp.error;
+      resp = await sb.from('company_taxes').delete().eq('month_id', monthId).eq('tax_type', 'inss');
+      if (resp.error) throw resp.error;
       if (salarios.length) {
-        await sb.from('salaries').insert(salarios.map(s=>({ month_id: monthId, employee_name: s.nome, gross_salary: s.salarioBruto, inss_deduction: s.descontos.inss, irrf_deduction: s.descontos.irrf, other_deductions: s.descontos.outros, net_salary: s.salarioLiquido, paid: s.pago }))).throwOnError();
+        const { error } = await sb.from('salaries').insert(salarios.map(s=>({ month_id: monthId, employee_name: s.nome, gross_salary: s.salarioBruto, inss_deduction: s.descontos.inss, irrf_deduction: s.descontos.irrf, other_deductions: s.descontos.outros, net_salary: s.salarioLiquido, paid: s.pago })));
+        if (error) throw error;
       }
       if (recebiveisEmpresa.length) {
-        await sb.from('company_receivables').insert(recebiveisEmpresa.map(r=>({ month_id: monthId, description: r.descricao, amount: r.valor, due_date: r.data||null, received: r.pago }))).throwOnError();
+        const { error } = await sb.from('company_receivables').insert(recebiveisEmpresa.map(r=>({ month_id: monthId, description: r.descricao, amount: r.valor, due_date: r.data||null, received: r.pago })));
+        if (error) throw error;
       }
-      await sb.from('company_taxes').insert({ month_id: monthId, tax_type: 'inss', amount: inssEmpresa.valor||0, due_date: (inssEmpresa as any).vencimento||null, paid: inssEmpresa.pago }).throwOnError();
+      {
+        const { error } = await sb.from('company_taxes').insert({ month_id: monthId, tax_type: 'inss', amount: inssEmpresa.valor||0, due_date: (inssEmpresa as any).vencimento||null, paid: inssEmpresa.pago });
+        if (error) throw error;
+      }
       alert('Dados salvos com sucesso.');
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      alert('Falha ao salvar.');
+      const msg = e?.message || e?.error?.message || 'Falha ao salvar.';
+      alert(`Falha ao salvar: ${msg}`);
     }
   };
 

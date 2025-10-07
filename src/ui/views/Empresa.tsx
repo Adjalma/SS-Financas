@@ -97,9 +97,10 @@ export const Empresa: React.FC = () => {
       }
 
       // Limpa lançamentos do mês e insere novamente
-      await sb.from('company_entries').delete().eq('month_id', monthId);
+      let r = await sb.from('company_entries').delete().eq('month_id', monthId);
+      if (r.error) throw r.error;
       if (entries.length) {
-        await sb.from('company_entries').insert(
+        const { error } = await sb.from('company_entries').insert(
           entries.map(e => ({
             month_id: monthId,
             type: e.type,
@@ -111,12 +112,13 @@ export const Empresa: React.FC = () => {
             payment_method: e.paymentMethod || null,
             paid: e.paid,
           }))
-        ).throwOnError();
+        );
+        if (error) throw error;
       }
       alert('Dados da Empresa salvos com sucesso.');
     } catch (err) {
       console.error(err);
-      alert('Falha ao salvar dados da Empresa.');
+      alert(`Falha ao salvar dados da Empresa: ${(err as any)?.message || 'Erro'}`);
     }
   };
 
