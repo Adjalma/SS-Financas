@@ -82,9 +82,22 @@ export const Holerite: React.FC = () => {
   useEffect(() => {
     (async () => {
       const dados = await loadHoleriteData(mes);
-      if (!dados) return;
+      // Linhas padrão para edição quando não houver dados
+      const defaultRows = [
+        { id: '1', nome: 'Adjalma', salarioBruto: 0, descontos: { inss: 0, irrf: 0, outros: 0 }, salarioLiquido: 0, pago: false },
+        { id: '2', nome: 'Eliete', salarioBruto: 0, descontos: { inss: 0, irrf: 0, outros: 0 }, salarioLiquido: 0, pago: false },
+        { id: '3', nome: 'Eliete (INSS)', salarioBruto: 0, descontos: { inss: 0, irrf: 0, outros: 0 }, salarioLiquido: 0, pago: false },
+      ];
+
+      if (!dados) {
+        setSalarios(defaultRows as any);
+        setRecebiveisEmpresa([] as any);
+        setInssEmpresa({ valor: 0, vencimento: '', pago: false } as any);
+        return;
+      }
+
       const { salarios: sal, recebiveisEmpresa: rec, inssEmpresa: tax } = dados;
-      setSalarios(sal as any);
+      setSalarios((sal && sal.length ? sal : defaultRows) as any);
       setRecebiveisEmpresa(rec as any);
       setInssEmpresa(tax as any);
     })();
