@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, LineChart, Line, Legend } from 'recharts';
-import { CalculatorInline } from '../widgets/CalculatorInline';
 import { useSharedData } from '../../hooks/useSharedData';
 import { loadMonthData, saveMonthData } from '../../lib/supabase';
 
@@ -121,7 +120,7 @@ export const GastosPessoais: React.FC = () => {
                   <tr key={g.categoria} style={idx % 2 === 0 ? styles.trAlt : undefined}>
                     <td style={{ color: '#111827', fontWeight: 700 }}>{g.categoria}</td>
                     <td>
-                      <input style={styles.inputNum} type="number" step="0.01" value={g.valor}
+                      <input style={styles.inputNum} type="number" step="0.01" value={g.valor === 0 ? '' : g.valor}
                         onChange={(e) => {
                           const v = Number(e.target.value) || 0;
                           setGastosFixos((arr) => arr.map((it, i) => i === idx ? { ...it, valor: v } : it));
@@ -158,11 +157,11 @@ export const GastosPessoais: React.FC = () => {
           <div style={styles.grid2}>
             <div>
               <label style={styles.label}>Cartão Adjalma</label>
-              <input style={styles.inputNum} type="number" step="0.01" value={cartaoAguiar} onChange={(e) => setCartaoAguiar(Number(e.target.value) || 0)} />
+              <input style={styles.inputNum} type="number" step="0.01" value={cartaoAguiar === 0 ? '' : cartaoAguiar} onChange={(e) => setCartaoAguiar(Number(e.target.value) || 0)} />
             </div>
             <div>
               <label style={styles.label}>Cartão Eliete</label>
-              <input style={styles.inputNum} type="number" step="0.01" value={cartaoBardela} onChange={(e) => setCartaoBardela(Number(e.target.value) || 0)} />
+              <input style={styles.inputNum} type="number" step="0.01" value={cartaoBardela === 0 ? '' : cartaoBardela} onChange={(e) => setCartaoBardela(Number(e.target.value) || 0)} />
             </div>
           </div>
           <div style={styles.muted}>Total: {formatMoeda(totals.totalCartao)}</div>
@@ -184,8 +183,8 @@ export const GastosPessoais: React.FC = () => {
           <div key={idx} style={styles.extraRow}>
             <input style={styles.input} placeholder="Descrição" value={e.descricao} onChange={(ev) => setExtras((arr) => arr.map((it, i) => i === idx ? { ...it, descricao: ev.target.value } : it))} />
             <input style={styles.input} type="date" value={e.data} onChange={(ev) => setExtras((arr) => arr.map((it, i) => i === idx ? { ...it, data: ev.target.value } : it))} />
-            <input style={styles.inputNum} type="number" step="0.01" value={e.aguiar} onChange={(ev) => setExtras((arr) => arr.map((it, i) => i === idx ? { ...it, aguiar: Number(ev.target.value) || 0 } : it))} />
-            <input style={styles.inputNum} type="number" step="0.01" value={e.bardela} onChange={(ev) => setExtras((arr) => arr.map((it, i) => i === idx ? { ...it, bardela: Number(ev.target.value) || 0 } : it))} />
+            <input style={styles.inputNum} type="number" step="0.01" value={e.aguiar === 0 ? '' : e.aguiar} onChange={(ev) => setExtras((arr) => arr.map((it, i) => i === idx ? { ...it, aguiar: Number(ev.target.value) || 0 } : it))} />
+            <input style={styles.inputNum} type="number" step="0.01" value={e.bardela === 0 ? '' : e.bardela} onChange={(ev) => setExtras((arr) => arr.map((it, i) => i === idx ? { ...it, bardela: Number(ev.target.value) || 0 } : it))} />
             <button style={styles.danger} onClick={() => setExtras((arr) => arr.filter((_, i) => i !== idx))}>Remover</button>
           </div>
         ))}
@@ -271,9 +270,7 @@ export const GastosPessoais: React.FC = () => {
         </div>
       </section>
 
-      <aside style={styles.aside}>
-        <CalculatorInline />
-      </aside>
+      {/* Calculadora removida */}
     </div>
   );
 };
@@ -302,7 +299,7 @@ const styles: Record<string, React.CSSProperties> = {
   metricLabel: { fontSize: 12, color: '#6b7280' },
   metricValue: { fontSize: 28, fontWeight: 800, color: '#111827' },
   section: { border: '1px solid #e5e7eb', borderRadius: 12, padding: 16, background: '#ffffff' },
-  sectionRow: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 },
+  sectionRow: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 },
   sectionCol: { border: '1px solid #e5e7eb', borderRadius: 12, padding: 16, background: '#ffffff' },
   h3: { margin: 0, marginBottom: 12, fontSize: 16 },
   h3Big: { margin: 0, marginBottom: 12, fontSize: 18, fontWeight: 800 },
@@ -318,8 +315,8 @@ const styles: Record<string, React.CSSProperties> = {
   rightStrongGreen: { textAlign: 'right', color: '#047857', fontWeight: 800 },
   pill: { display: 'inline-flex', alignItems: 'center', padding: '4px 8px', borderRadius: 999, border: '1px solid #e5e7eb', background: '#ffffff', color: '#111827' },
   money: { fontVariantNumeric: 'tabular-nums', textAlign: 'right' },
-  grid2: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 },
-  grid3: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 },
+  grid2: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 },
+  grid3: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12 },
   totalStrong: { marginTop: 12, fontWeight: 700 },
   extraRow: { display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr auto', gap: 8, alignItems: 'center', marginBottom: 8 },
   totaisExtra: { display: 'flex', gap: 16, marginTop: 8, color: '#374151' },

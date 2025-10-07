@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, LineChart, Line, Legend } from 'recharts';
-import { CalculatorInline } from '../widgets/CalculatorInline';
 import { loadMonthData } from '../../lib/supabase';
 import { getSupabase } from '../../lib/supabase';
 
@@ -194,7 +193,7 @@ export const Empresa: React.FC = () => {
           <input style={styles.input} placeholder="Centro de Custo" value={form.costCenter || ''} onChange={(e) => setForm({ ...form, costCenter: e.target.value })} />
           <input style={styles.input} placeholder="Descrição" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
           <input style={styles.input} type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
-          <input style={styles.input} type="number" step="0.01" placeholder="Valor" value={form.amount} onChange={(e) => setForm({ ...form, amount: Number(e.target.value) || 0 })} />
+          <input style={styles.input} type="number" step="0.01" placeholder="Valor" value={form.amount === 0 ? '' : form.amount} onChange={(e) => setForm({ ...form, amount: Number(e.target.value) || 0 })} />
           <input style={styles.input} placeholder="Pagamento (ex: PIX)" value={form.paymentMethod || ''} onChange={(e) => setForm({ ...form, paymentMethod: e.target.value })} />
           <label style={styles.inline}><input type="checkbox" checked={form.paid} onChange={(e) => setForm({ ...form, paid: e.target.checked })} /> Pago</label>
           <div />
@@ -292,9 +291,7 @@ export const Empresa: React.FC = () => {
         </div>
       </section>
 
-      <aside>
-        <CalculatorInline />
-      </aside>
+      {/* Calculadora removida */}
     </div>
   );
 };
@@ -327,7 +324,7 @@ const styles: Record<string, React.CSSProperties> = {
   metricValue: { fontSize: 28, fontWeight: 800, color: '#111827' },
   section: { border: '1px solid #e5e7eb', borderRadius: 12, padding: 16, background: '#ffffff' },
   h3: { margin: 0, marginBottom: 12, fontSize: 16 },
-  grid6: { display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, alignItems: 'center' },
+  grid6: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8, alignItems: 'center' },
   input: { width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid #e5e7eb' },
   inline: { display: 'flex', alignItems: 'center', gap: 6, color: '#374151' },
   tableWrap: { overflowX: 'auto' },

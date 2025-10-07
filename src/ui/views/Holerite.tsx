@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, PieChart, Pie, Cell, LineChart, Line, ResponsiveContainer, Tooltip, Legend } from 'recharts';
-import { CalculatorInline } from '../widgets/CalculatorInline';
 import { useSharedData } from '../../hooks/useSharedData';
 
 
 export const Holerite: React.FC = () => {
+  const [mes, setMes] = useState<string>(() => new Date().toISOString().slice(0, 7));
   const {
     salarios,
     setSalarios,
@@ -32,6 +32,35 @@ export const Holerite: React.FC = () => {
     ]
   };
 
+  const salvarDados = async () => {
+    try {
+      const { getSupabase } = await import('../../lib/supabase');
+      const sb = getSupabase();
+      if (!sb) {
+        localStorage.setItem(`holerite_${mes}`, JSON.stringify({ salarios, recebiveisEmpresa, inssEmpresa }));
+        alert('Dados salvos localmente.');
+        return;
+      }
+      await sb.from('months').upsert({ year_month: mes }).throwOnError();
+      const { data: monthRow } = await sb.from('months').select('*').eq('year_month', mes).single();
+      const monthId = monthRow.id;
+      await sb.from('salaries').delete().eq('month_id', monthId);
+      await sb.from('company_receivables').delete().eq('month_id', monthId);
+      await sb.from('company_taxes').delete().eq('month_id', monthId).eq('tax_type', 'inss');
+      if (salarios.length) {
+        await sb.from('salaries').insert(salarios.map(s=>({ month_id: monthId, employee_name: s.nome, gross_salary: s.salarioBruto, inss_deduction: s.descontos.inss, irrf_deduction: s.descontos.irrf, other_deductions: s.descontos.outros, net_salary: s.salarioLiquido, paid: s.pago }))).throwOnError();
+      }
+      if (recebiveisEmpresa.length) {
+        await sb.from('company_receivables').insert(recebiveisEmpresa.map(r=>({ month_id: monthId, description: r.descricao, amount: r.valor, due_date: r.data||null, received: r.pago }))).throwOnError();
+      }
+      await sb.from('company_taxes').insert({ month_id: monthId, tax_type: 'inss', amount: inssEmpresa.valor||0, due_date: (inssEmpresa as any).vencimento||null, paid: inssEmpresa.pago }).throwOnError();
+      alert('Dados salvos com sucesso.');
+    } catch (e) {
+      console.error(e);
+      alert('Falha ao salvar.');
+    }
+  };
+
   return (
     <div style={styles.page}>
       <div style={styles.topbar}>
@@ -41,9 +70,9 @@ export const Holerite: React.FC = () => {
         </div>
         <div style={styles.topbarRight}>
           <div style={styles.month}>
-            <input type="month" defaultValue={new Date().toISOString().slice(0, 7)} />
+            <input type="month" value={mes} onChange={(e)=>setMes(e.target.value)} />
           </div>
-          <button style={styles.primary}>Salvar Dados</button>
+          <button style={styles.primary} onClick={salvarDados}>Salvar Dados</button>
         </div>
       </div>
 
@@ -134,28 +163,28 @@ export const Holerite: React.FC = () => {
                     {sal.nome}
                   </td>
                   <td>
-                    <input style={styles.inputNum} type="number" step="0.01" value={sal.salarioBruto}
+                    <input style={styles.inputNum} type="number" step="0.01" value={sal.salarioBruto === 0 ? '' : sal.salarioBruto}
                       onChange={(e) => {
                         const v = Number(e.target.value) || 0;
                         setSalarios(arr => arr.map((it, i) => i === idx ? { ...it, salarioBruto: v } : it));
                       }} />
                   </td>
                   <td>
-                    <input style={styles.inputNum} type="number" step="0.01" value={sal.descontos.inss}
+                    <input style={styles.inputNum} type="number" step="0.01" value={sal.descontos.inss === 0 ? '' : sal.descontos.inss}
                       onChange={(e) => {
                         const v = Number(e.target.value) || 0;
                         setSalarios(arr => arr.map((it, i) => i === idx ? { ...it, descontos: { ...it.descontos, inss: v } } : it));
                       }} />
                   </td>
                   <td>
-                    <input style={styles.inputNum} type="number" step="0.01" value={sal.descontos.irrf}
+                    <input style={styles.inputNum} type="number" step="0.01" value={sal.descontos.irrf === 0 ? '' : sal.descontos.irrf}
                       onChange={(e) => {
                         const v = Number(e.target.value) || 0;
                         setSalarios(arr => arr.map((it, i) => i === idx ? { ...it, descontos: { ...it.descontos, irrf: v } } : it));
                       }} />
                   </td>
                   <td>
-                    <input style={styles.inputNum} type="number" step="0.01" value={sal.descontos.outros}
+                    <input style={styles.inputNum} type="number" step="0.01" value={sal.descontos.outros === 0 ? '' : sal.descontos.outros}
                       onChange={(e) => {
                         const v = Number(e.target.value) || 0;
                         setSalarios(arr => arr.map((it, i) => i === idx ? { ...it, descontos: { ...it.descontos, outros: v } } : it));
@@ -213,7 +242,7 @@ export const Holerite: React.FC = () => {
                 <tr key={rec.id} style={idx % 2 === 0 ? styles.trAlt : undefined}>
                   <td style={{ color: '#111827', fontWeight: 700 }}>{rec.descricao}</td>
                   <td>
-                    <input style={styles.inputNum} type="number" step="0.01" value={rec.valor}
+                    <input style={styles.inputNum} type="number" step="0.01" value={rec.valor === 0 ? '' : rec.valor}
                       onChange={(e) => {
                         const v = Number(e.target.value) || 0;
                         setRecebiveisEmpresa(arr => arr.map((it, i) => i === idx ? { ...it, valor: v } : it));
@@ -257,7 +286,7 @@ export const Holerite: React.FC = () => {
         <div style={styles.inssCard}>
           <div style={styles.inssRow}>
             <label style={styles.label}>Valor do INSS:</label>
-            <input style={styles.inputNum} type="number" step="0.01" value={inssEmpresa.valor}
+            <input style={styles.inputNum} type="number" step="0.01" value={inssEmpresa.valor === 0 ? '' : inssEmpresa.valor}
               onChange={(e) => setInssEmpresa(prev => ({ ...prev, valor: Number(e.target.value) || 0 }))} />
           </div>
           <div style={styles.inssRow}>
@@ -330,9 +359,7 @@ export const Holerite: React.FC = () => {
         </div>
       </section>
 
-      <aside style={styles.aside}>
-        <CalculatorInline />
-      </aside>
+      {/* Calculadora removida */}
     </div>
   );
 };
