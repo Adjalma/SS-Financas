@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, PieChart, Pie, Cell, LineChart, Line, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { useSharedData } from '../../hooks/useSharedData';
+import { loadHoleriteData } from '../../lib/supabase';
 
 
 export const Holerite: React.FC = () => {
@@ -71,6 +72,19 @@ export const Holerite: React.FC = () => {
       alert(`Falha ao salvar: ${msg}`);
     }
   };
+
+  // Carregar dados do mês no primeiro acesso ou troca de mês
+  useEffect(() => {
+    (async () => {
+      const dados = await loadHoleriteData(mes);
+      if (!dados) return;
+      const { salarios: sal, recebiveisEmpresa: rec, inssEmpresa: tax } = dados;
+      setSalarios(sal as any);
+      setRecebiveisEmpresa(rec as any);
+      setInssEmpresa(tax as any);
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mes]);
 
   return (
     <div style={styles.page}>

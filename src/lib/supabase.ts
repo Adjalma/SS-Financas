@@ -87,4 +87,40 @@ export async function loadMonthData(mes: string): Promise<MonthPayload | null> {
   };
 }
 
+// ============================
+// Holerite - Load
+// ============================
+export async function loadHoleriteData(mes: string): Promise<{
+  salarios: Array<{ id?: string; nome: string; salarioBruto: number; descontos: { inss: number; irrf: number; outros: number }; salarioLiquido: number; pago: boolean }>;
+  recebiveisEmpresa: Array<{ id?: string; descricao: string; valor: number; data: string; pago: boolean }>;
+  inssEmpresa: { valor: number; vencimento?: string; dataVencimento?: string; pago: boolean };
+} | null> {
+  const sb = getSupabase();
+  if (!sb) {
+    const raw = localStorage.getItem(`holerite_${mes}`);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  }
+  const { data: monthRow } = await sb.from('months').select('*').eq('year_month', mes).maybeSingle();
+  if (!monthRow) return null;
+  const monthId = monthRow.id;
+  const [{ data: sal }, { data: rec }, { data: taxes }] = await Promise.all([
+    sb.from('salaries').select('*').eq('month_id', monthId),
+    sb.from('company_receivables').select('*').eq('month_id', monthId),
+    sb.from('company_taxes').select('*').eq('month_id', monthId).eq('tax_type', 'inss'),
+  ]);
+  const salarios = (sal || []).map((s: any) => ({
+    id: String(s.id),
+    nome: s.employee_name,
+    salarioBruto: Number(s.gross_salary) || 0,
+    descontos: { inss: Number(s.inss_deduction) || 0, irrf: Number(s.irrf_deduction) || 0, outros: Number(s.other_deductions) || 0 },
+    salarioLiquido: Number(s.net_salary) || (Number(s.gross_salary)||0) - (Number(s.inss_deduction)||0) - (Number(s.irrf_deduction)||0) - (Number(s.other_deductions)||0),
+    pago: !!s.paid,
+  }));
+  const recebiveisEmpresa = (rec || []).map((r: any) => ({ id: String(r.id), descricao: r.description || '', valor: Number(r.amount) || 0, data: r.due_date || '', pago: !!r.received }));
+  const tax = (taxes || [])[0];
+  const inssEmpresa = { valor: Number(tax?.amount) || 0, vencimento: tax?.due_date || '', dataVencimento: tax?.due_date || '', pago: !!tax?.paid };
+  return { salarios, recebiveisEmpresa, inssEmpresa };
+}
+
 
