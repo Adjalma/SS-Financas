@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, LineChart, Line, Legend } from 'recharts';
-import { loadMonthData } from '../../lib/supabase';
 import { getSupabase } from '../../lib/supabase';
 
 type Entry = {
