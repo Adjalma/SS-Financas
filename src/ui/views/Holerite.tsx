@@ -53,12 +53,17 @@ export const Holerite: React.FC = () => {
       if (resp.error) throw resp.error;
       resp = await sb.from('company_taxes').delete().eq('month_id', monthId).eq('tax_type', 'inss');
       if (resp.error) throw resp.error;
-      if (salarios.length) {
-        const { error } = await sb.from('salaries').insert(salarios.map(s=>({ month_id: monthId, employee_name: s.nome, gross_salary: s.salarioBruto, inss_deduction: s.descontos.inss, irrf_deduction: s.descontos.irrf, other_deductions: s.descontos.outros, net_salary: s.salarioLiquido, paid: s.pago })));
+      const salariosValidos = salarios.filter(s => {
+        const total = (Number(s.salarioBruto)||0) + (Number(s.descontos.inss)||0) + (Number(s.descontos.irrf)||0) + (Number(s.descontos.outros)||0) + (Number(s.salarioLiquido)||0);
+        return total > 0 || s.pago; // ignora linhas em branco
+      });
+      if (salariosValidos.length) {
+        const { error } = await sb.from('salaries').insert(salariosValidos.map(s=>({ month_id: monthId, employee_name: s.nome, gross_salary: s.salarioBruto, inss_deduction: s.descontos.inss, irrf_deduction: s.descontos.irrf, other_deductions: s.descontos.outros, net_salary: s.salarioLiquido, paid: s.pago })));
         if (error) throw error;
       }
-      if (recebiveisEmpresa.length) {
-        const { error } = await sb.from('company_receivables').insert(recebiveisEmpresa.map(r=>({ month_id: monthId, description: r.descricao, amount: r.valor, due_date: r.data||null, received: r.pago })));
+      const recValidos = recebiveisEmpresa.filter(r => (Number(r.valor)||0) > 0 || r.descricao || r.pago);
+      if (recValidos.length) {
+        const { error } = await sb.from('company_receivables').insert(recValidos.map(r=>({ month_id: monthId, description: r.descricao, amount: r.valor, due_date: r.data||null, received: r.pago })));
         if (error) throw error;
       }
       {
