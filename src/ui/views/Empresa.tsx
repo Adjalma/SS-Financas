@@ -77,7 +77,7 @@ export const Empresa: React.FC = () => {
         alert('Dados da Empresa salvos localmente. Configure o Supabase para salvar em nuvem.');
         return;
       }
-      await sb.from('months').upsert({ year_month: mes }).throwOnError();
+      await sb.from('months').upsert({ year_month: mes }, { onConflict: 'year_month' }).throwOnError();
       const { data: monthRow } = await sb.from('months').select('*').eq('year_month', mes).single();
       const monthId = monthRow.id;
 

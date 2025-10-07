@@ -41,7 +41,7 @@ export const Holerite: React.FC = () => {
         alert('Dados salvos localmente.');
         return;
       }
-      await sb.from('months').upsert({ year_month: mes }).throwOnError();
+      await sb.from('months').upsert({ year_month: mes }, { onConflict: 'year_month' }).throwOnError();
       const { data: monthRow, error: monthErr } = await sb.from('months').select('*').eq('year_month', mes).single();
       if (monthErr || !monthRow) throw monthErr || new Error('Mês não encontrado');
       const monthId = monthRow.id;

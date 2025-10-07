@@ -23,7 +23,7 @@ export async function saveMonthData(payload: MonthPayload): Promise<void> {
     localStorage.setItem(`gastosFamilia_${payload.mes}`, JSON.stringify(payload));
     return;
   }
-  await sb.from('months').upsert({ year_month: payload.mes }).throwOnError();
+      await sb.from('months').upsert({ year_month: payload.mes }, { onConflict: 'year_month' }).throwOnError();
   const { data: monthRow } = await sb.from('months').select('*').eq('year_month', payload.mes).single();
   const monthId = monthRow.id;
 
