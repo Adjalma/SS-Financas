@@ -20,12 +20,34 @@ export const GastosPessoais: React.FC = () => {
     let cancelled = false;
     (async () => {
       const dados = await loadMonthData(mes);
-      if (!dados || cancelled) return;
-      // APLICA exatamente o retorno do banco (sem somar) para evitar crescimento
-      setGastosFixos(dados.gastosFixos || []);
-      setCartaoAguiar(Number(dados.cartoes.aguiar) || 0);
-      setCartaoBardela(Number(dados.cartoes.bardela) || 0);
-      setExtras((dados.gastosExtras || []).length ? dados.gastosExtras : [{ descricao: '', data: '', aguiar: 0, bardela: 0 }]);
+      if (cancelled) return;
+      if (dados && (dados.gastosFixos?.length || dados.gastosExtras?.length || (dados.cartoes && (dados.cartoes.aguiar || dados.cartoes.bardela)))) {
+        setGastosFixos(dados.gastosFixos || []);
+        setCartaoAguiar(Number(dados.cartoes.aguiar) || 0);
+        setCartaoBardela(Number(dados.cartoes.bardela) || 0);
+        setExtras((dados.gastosExtras || []).length ? dados.gastosExtras : [{ descricao: '', data: '', aguiar: 0, bardela: 0 }]);
+      } else {
+        // Semeadura automática quando não há dados do mês ainda
+        setGastosFixos([
+          { categoria: 'Empregada', valor: 1700, pago: false },
+          { categoria: 'Carro', valor: 1030, pago: false },
+          { categoria: 'Combustível', valor: 500, pago: false },
+          { categoria: 'Alimentação Miguel', valor: 150, pago: false },
+          { categoria: 'Segurança', valor: 165, pago: false },
+          { categoria: 'Colégio', valor: 1800, pago: false },
+          { categoria: 'Psicóloga', valor: 800, pago: false },
+          { categoria: 'Psicóloga (adicional)', valor: 230, pago: false },
+          { categoria: 'Futebol', valor: 230, pago: false },
+          { categoria: 'Cinema', valor: 200, pago: false },
+          { categoria: 'Seguro', valor: 700, pago: false },
+          { categoria: 'Água', valor: 360, pago: false },
+          { categoria: 'Luz', valor: 300, pago: false },
+          { categoria: 'Revisão do Carro', valor: 300, pago: false },
+        ]);
+        setCartaoAguiar(0);
+        setCartaoBardela(0);
+        setExtras([{ descricao: '', data: '', aguiar: 0, bardela: 0 }]);
+      }
     })();
     return () => { cancelled = true; };
   }, [mes, setGastosFixos]);
