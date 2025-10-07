@@ -41,31 +41,8 @@ export const Empresa: React.FC = () => {
           return;
         }
       }
-      // Fallback sempre que não houver dados no banco ou Supabase ausente
-      const pessoais = await loadMonthData(mes);
-      if (pessoais) {
-        const fixosAsEntries: Entry[] = (pessoais.gastosFixos || []).map(g => ({
-          month: mes,
-          type: 'expense',
-          category: g.categoria,
-          description: `Gasto Fixo - ${g.categoria}`,
-          date: `${mes}-01`,
-          amount: Number(g.valor) || 0,
-          paid: !!g.pago,
-        }));
-        const extrasAsEntries: Entry[] = (pessoais.gastosExtras || []).map(e => ({
-          month: mes,
-          type: 'expense',
-          category: e.descricao || 'Extra',
-          description: e.descricao || 'Extra',
-          date: e.data || `${mes}-01`,
-          amount: (Number(e.aguiar)||0) + (Number(e.bardela)||0),
-          paid: true,
-        }));
-        setEntries([...fixosAsEntries, ...extrasAsEntries]);
-      } else {
-        setEntries([]);
-      }
+      // Removido fallback que misturava dados pessoais na Empresa
+      setEntries([]);
     })();
   }, [mes]);
 
@@ -123,6 +100,11 @@ export const Empresa: React.FC = () => {
   };
 
   const addEntry = async () => {
+    // Validação mínima de formulário
+    if (!form.description || !form.date || !(Number(form.amount) > 0)) {
+      alert('Preencha Descrição, Data e Valor (> 0).');
+      return;
+    }
     const sb = getSupabase();
     if (!sb) { setEntries((arr) => [...arr, form]); return; }
     await sb.from('months').upsert({ year_month: mes }).throwOnError();
@@ -130,11 +112,11 @@ export const Empresa: React.FC = () => {
     const monthId = monthRow.id;
     let categoryId: number | null = null;
     let costCenterId: number | null = null;
-    if (form.category) {
+    if (form.category && form.category.trim()) {
       const { data: cat } = await sb.from('categories').upsert({ name: form.category }).select('id').single();
       categoryId = cat?.id || null;
     }
-    if (form.costCenter) {
+    if (form.costCenter && form.costCenter.trim()) {
       const { data: cc } = await sb.from('cost_centers').upsert({ name: form.costCenter }).select('id').single();
       costCenterId = cc?.id || null;
     }
