@@ -69,6 +69,57 @@ export const Empresa: React.FC = () => {
     })();
   }, [mes]);
 
+  const saveEmpresa = async () => {
+    try {
+      const sb = getSupabase();
+      if (!sb) {
+        localStorage.setItem(`empresa_${mes}`, JSON.stringify(entries));
+        alert('Dados da Empresa salvos localmente. Configure o Supabase para salvar em nuvem.');
+        return;
+      }
+      await sb.from('months').upsert({ year_month: mes }).throwOnError();
+      const { data: monthRow } = await sb.from('months').select('*').eq('year_month', mes).single();
+      const monthId = monthRow.id;
+
+      // Upsert categorias e centros de custo distintos
+      const distinctCategories = Array.from(new Set(entries.map(e => e.category).filter(Boolean))) as string[];
+      const distinctCostCenters = Array.from(new Set(entries.map(e => e.costCenter).filter(Boolean))) as string[];
+
+      const catIdMap = new Map<string, number>();
+      for (const name of distinctCategories) {
+        const { data } = await sb.from('categories').upsert({ name }).select('id').single();
+        if (data?.id) catIdMap.set(name, data.id);
+      }
+      const ccIdMap = new Map<string, number>();
+      for (const name of distinctCostCenters) {
+        const { data } = await sb.from('cost_centers').upsert({ name }).select('id').single();
+        if (data?.id) ccIdMap.set(name, data.id);
+      }
+
+      // Limpa lançamentos do mês e insere novamente
+      await sb.from('company_entries').delete().eq('month_id', monthId);
+      if (entries.length) {
+        await sb.from('company_entries').insert(
+          entries.map(e => ({
+            month_id: monthId,
+            type: e.type,
+            category_id: e.category ? catIdMap.get(e.category) ?? null : null,
+            cost_center_id: e.costCenter ? ccIdMap.get(e.costCenter) ?? null : null,
+            description: e.description,
+            date: e.date,
+            amount: e.amount,
+            payment_method: e.paymentMethod || null,
+            paid: e.paid,
+          }))
+        ).throwOnError();
+      }
+      alert('Dados da Empresa salvos com sucesso.');
+    } catch (err) {
+      console.error(err);
+      alert('Falha ao salvar dados da Empresa.');
+    }
+  };
+
   const addEntry = async () => {
     const sb = getSupabase();
     if (!sb) { setEntries((arr) => [...arr, form]); return; }
@@ -102,6 +153,7 @@ export const Empresa: React.FC = () => {
         </div>
         <div style={styles.topbarRight}>
           <input style={styles.month} type="month" value={mes} onChange={(e) => setMes(e.target.value)} />
+          <button style={styles.primary} onClick={saveEmpresa}>Salvar Dados</button>
         </div>
       </div>
       <h3 style={styles.h3}>Dashboard Principal</h3>
