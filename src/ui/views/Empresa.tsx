@@ -99,32 +99,41 @@ export const Empresa: React.FC = () => {
   };
 
   const addEntry = async () => {
-    // Validação mínima de formulário
-    if (!form.description || !form.date || !(Number(form.amount) > 0)) {
-      alert('Preencha Descrição, Data e Valor (> 0).');
-      return;
+    try {
+      // Validação mínima de formulário
+      if (!form.description || !form.date || !(Number(form.amount) > 0)) {
+        alert('Preencha Descrição, Data e Valor (> 0).');
+        return;
+      }
+      const sb = getSupabase();
+      if (!sb) { setEntries((arr) => [...arr, form]); return; }
+      await sb.from('months').upsert({ year_month: mes }, { onConflict: 'year_month' }).throwOnError();
+      const { data: monthRow, error: monthErr } = await sb.from('months').select('*').eq('year_month', mes).single();
+      if (monthErr || !monthRow) throw monthErr || new Error('Mês não encontrado');
+      const monthId = monthRow.id;
+      let categoryId: number | null = null;
+      let costCenterId: number | null = null;
+      if (form.category && form.category.trim()) {
+        const { data: cat, error: catErr } = await sb.from('categories').upsert({ name: form.category }).select('id').single();
+        if (catErr) throw catErr;
+        categoryId = cat?.id || null;
+      }
+      if (form.costCenter && form.costCenter.trim()) {
+        const { data: cc, error: ccErr } = await sb.from('cost_centers').upsert({ name: form.costCenter }).select('id').single();
+        if (ccErr) throw ccErr;
+        costCenterId = cc?.id || null;
+      }
+      const { error } = await sb.from('company_entries').insert({ month_id: monthId, type: form.type, category_id: categoryId, cost_center_id: costCenterId, description: form.description, date: form.date, amount: form.amount, payment_method: form.paymentMethod || null, paid: form.paid });
+      if (error) throw error;
+      setForm({ ...form, description: '', amount: 0 });
+      // reload
+      const { data } = await sb.from('company_entries').select(`id, type, description, date, amount, paid, payment_method, categories(name), cost_centers(name)`).eq('month_id', monthId).order('date', { ascending: true });
+      const mapped: Entry[] = (data || []).map((r: any) => ({ id: r.id, month: mes, type: r.type, category: r.categories?.name || '', costCenter: r.cost_centers?.name || '', description: r.description, date: r.date, amount: Number(r.amount) || 0, paymentMethod: r.payment_method || '', paid: !!r.paid }));
+      setEntries(mapped);
+    } catch (err: any) {
+      console.error(err);
+      alert(`Falha ao adicionar lançamento: ${err?.message || 'Erro'}`);
     }
-    const sb = getSupabase();
-    if (!sb) { setEntries((arr) => [...arr, form]); return; }
-    await sb.from('months').upsert({ year_month: mes }).throwOnError();
-    const { data: monthRow } = await sb.from('months').select('*').eq('year_month', mes).single();
-    const monthId = monthRow.id;
-    let categoryId: number | null = null;
-    let costCenterId: number | null = null;
-    if (form.category && form.category.trim()) {
-      const { data: cat } = await sb.from('categories').upsert({ name: form.category }).select('id').single();
-      categoryId = cat?.id || null;
-    }
-    if (form.costCenter && form.costCenter.trim()) {
-      const { data: cc } = await sb.from('cost_centers').upsert({ name: form.costCenter }).select('id').single();
-      costCenterId = cc?.id || null;
-    }
-    await sb.from('company_entries').insert({ month_id: monthId, type: form.type, category_id: categoryId, cost_center_id: costCenterId, description: form.description, date: form.date, amount: form.amount, payment_method: form.paymentMethod || null, paid: form.paid }).throwOnError();
-    setForm({ ...form, description: '', amount: 0 });
-    // reload
-    const { data } = await sb.from('company_entries').select(`id, type, description, date, amount, paid, payment_method, categories(name), cost_centers(name)`).eq('month_id', monthId).order('date', { ascending: true });
-    const mapped: Entry[] = (data || []).map((r: any) => ({ id: r.id, month: mes, type: r.type, category: r.categories?.name || '', costCenter: r.cost_centers?.name || '', description: r.description, date: r.date, amount: Number(r.amount) || 0, paymentMethod: r.payment_method || '', paid: !!r.paid }));
-    setEntries(mapped);
   };
 
   return (
