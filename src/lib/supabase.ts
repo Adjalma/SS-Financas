@@ -27,9 +27,9 @@ export async function saveMonthData(payload: MonthPayload): Promise<void> {
   const { data: monthRow } = await sb.from('months').select('*').eq('year_month', payload.mes).single();
   const monthId = monthRow.id;
 
-  await sb.from('fixed_costs').delete().eq('month_id', monthId);
-  await sb.from('variable_expenses').delete().eq('month_id', monthId);
-  await sb.from('cards').delete().eq('month_id', monthId);
+      await sb.from('fixed_costs').delete().eq('month_id', monthId).throwOnError();
+      await sb.from('variable_expenses').delete().eq('month_id', monthId).throwOnError();
+      await sb.from('cards').delete().eq('month_id', monthId).throwOnError();
 
   if (payload.gastosFixos.length) {
     await sb.from('fixed_costs').insert(payload.gastosFixos.map(g => ({ month_id: monthId, category: g.categoria, amount: g.valor, paid: g.pago }))).throwOnError();
