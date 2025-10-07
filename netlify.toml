@@ -1,0 +1,12 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  # A chave anon do Supabase (prefixo VITE_) precisa estar no bundle do frontend.
+  # Evita falha do Secrets Scanning para essa chave específica.
+  SECRETS_SCAN_OMIT_KEYS = "VITE_SUPABASE_ANON_KEY"
+  # Alternativa (caso ainda barre, descomente a linha abaixo para desabilitar totalmente):
+  # SECRETS_SCAN_ENABLED = "false"
+
+
