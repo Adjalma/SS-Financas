@@ -46,19 +46,18 @@ export const Holerite: React.FC = () => {
       const { data: monthRow, error: monthErr } = await sb.from('months').select('*').eq('year_month', mes).single();
       if (monthErr || !monthRow) throw monthErr || new Error('Mês não encontrado');
       const monthId = monthRow.id;
-      let resp;
-      resp = await sb.from('salaries').delete().eq('month_id', monthId);
-      if (resp.error) throw resp.error;
-      resp = await sb.from('company_receivables').delete().eq('month_id', monthId);
-      if (resp.error) throw resp.error;
-      resp = await sb.from('company_taxes').delete().eq('month_id', monthId).eq('tax_type', 'inss');
-      if (resp.error) throw resp.error;
+      // UPSERT salários e INSS para não sumirem ao trocar de aba
       const salariosValidos = salarios.filter(s => {
         const total = (Number(s.salarioBruto)||0) + (Number(s.descontos.inss)||0) + (Number(s.descontos.irrf)||0) + (Number(s.descontos.outros)||0) + (Number(s.salarioLiquido)||0);
         return total > 0 || s.pago; // ignora linhas em branco
       });
       if (salariosValidos.length) {
-        const { error } = await sb.from('salaries').insert(salariosValidos.map(s=>({ month_id: monthId, employee_name: s.nome, gross_salary: s.salarioBruto, inss_deduction: s.descontos.inss, irrf_deduction: s.descontos.irrf, other_deductions: s.descontos.outros, net_salary: s.salarioLiquido, paid: s.pago })));
+        const { error } = await sb
+          .from('salaries')
+          .upsert(
+            salariosValidos.map(s=>({ month_id: monthId, employee_name: s.nome, gross_salary: s.salarioBruto, inss_deduction: s.descontos.inss, irrf_deduction: s.descontos.irrf, other_deductions: s.descontos.outros, net_salary: s.salarioLiquido, paid: s.pago })),
+            { onConflict: 'month_id,employee_name' }
+          );
         if (error) throw error;
       }
       const recValidos = recebiveisEmpresa.filter(r => (Number(r.valor)||0) > 0 || r.descricao || r.pago);
@@ -67,7 +66,9 @@ export const Holerite: React.FC = () => {
         if (error) throw error;
       }
       {
-        const { error } = await sb.from('company_taxes').insert({ month_id: monthId, tax_type: 'inss', amount: inssEmpresa.valor||0, due_date: (inssEmpresa as any).vencimento||null, paid: inssEmpresa.pago });
+        const { error } = await sb
+          .from('company_taxes')
+          .upsert({ month_id: monthId, tax_type: 'inss', amount: inssEmpresa.valor||0, due_date: (inssEmpresa as any).vencimento||null, paid: inssEmpresa.pago }, { onConflict: 'month_id,tax_type' });
         if (error) throw error;
       }
       alert('Dados salvos com sucesso.');
