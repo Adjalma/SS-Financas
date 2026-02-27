@@ -67,8 +67,7 @@ npm run dev
 
 ## 🔐 Login Administrador
 
-- **Login:** `10665909748`
-- **Senha:** `manogengiS10*`
+> ⚠️ **Segurança:** As credenciais de administrador devem ser configuradas no Supabase (tabela de usuários) ou via variáveis de ambiente. **Nunca** commite senhas no repositório.
 
 ## 📊 Estrutura do Banco de Dados
 
